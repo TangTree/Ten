@@ -1,6 +1,11 @@
-import time, requests, sys, re, json, os,uuid, random
-import datetime
-from urllib.parse import unquote_plus, unquote
+"""
+File: jd_inviteDrawPrize.py(邀好友赢现金-抽奖)
+Author: 𝓣𝓮𝓷 𝓸'𝓬𝓵𝓸𝓬𝓴
+cron: 1 1 1 1 1 1
+new Env('邀好友赢现金-抽奖');
+"""
+import sys,  os
+from urllib.parse import  unquote
 from TEN_UTIL import *
 
 NUMBER_OF = os.environ.get("draw_numer") if os.environ.get("draw_numer") else 3
