@@ -10,10 +10,16 @@ new Env('邀好友赢现金-助理');
 import sys
 from jdCookie import *
 from TEN_UTIL import *
+start = time.time()
 
-TEN_TOKEN = os.environ.get("TEN_TOKEN") if os.environ.get("TEN_TOKEN") else sys.exit('❌未获取到TEN_TOKEN变量 程序自动退出')
+
 #scode  定义 1为特价 2为京东
-scode = 1
+TEN_TOKEN = os.environ.get("TEN_TOKEN") if os.environ.get("TEN_TOKEN") else sys.exit('❌未获取到TEN_TOKEN变量 程序自动退出')
+TEN_inviter = os.environ.get("TEN_inviter") if os.environ.get("TEN_inviter") else False
+TEN_scode = os.environ.get("TEN_scode") if os.environ.get("TEN_scode") else 1
+
+
+
 
 
 try:
@@ -32,13 +38,21 @@ if verify != True:
 
 stats = stats()
 if stats.status_code != False:
-    linkId = stats.json()[f'linkId{scode}']
+    linkId = stats.json()[f'linkId{TEN_scode}']
 
 
 power_success = []
 power_failure = []
 not_log = []
-start = time.time()
+
+
+def convert_ms_to_hours_minutes(milliseconds):
+    seconds = milliseconds // 1000
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f'{hours}:{minutes}'
+
+
 
 def main():
     response = H5API('POST', "inviteFissionBeforeHome", {'linkId': linkId, "isJdApp": True, 'inviter': stats.json()['inviter']}, cks[0],'02f8d')
@@ -47,12 +61,16 @@ def main():
     else:
         printf(cks[0],'❌助理作者失败 下次记得把助理留给我 呜呜呜！！！')
         time.sleep(2)
-    response = H5API('POST','inviteFissionHome', {'linkId': linkId, "inviter": "", }, cks[0], 'af89e')
-    if response == 900:
-        sys.exit('❌授权未通过 程序自动退出！！！')
-    printf(cks[0], f'助力次数:{response[1]["data"]["prizeNum"] + response[1]["data"]["drawPrizeNum"]}次 ✅【助力码】:{response[1]["data"]["inviter"]}')
-    inviter = response[1]["data"]["inviter"]
-    time.sleep(3)
+    if TEN_inviter == False:
+        response = H5API('POST','inviteFissionHome', {'linkId': linkId, "inviter": "", }, cks[0], 'af89e')
+        if response == 900:
+            sys.exit('❌授权未通过 程序自动退出！！！')
+        printf(cks[0],
+               f'⏰剩余时间:{convert_ms_to_hours_minutes(response[1]["data"]["countDownTime"])} 🎉已获取助力:{response[1]["data"]["prizeNum"] + response[1]["data"]["drawPrizeNum"]}次 ✅【助力码】:{response[1]["data"]["inviter"]}')
+        inviter = response[1]["data"]["inviter"]
+        time.sleep(3)
+    else:
+        inviter = TEN_inviter
     print(f"****************开始助理****************")
     for i, cookie in enumerate(cks[1:], 1):
         response = H5API('POST',"inviteFissionBeforeHome", {'linkId': linkId, "isJdApp": True, 'inviter': inviter}, cookie, '02f8d')
@@ -75,6 +93,7 @@ def main():
             elif res['data']['helpResult'] == 2:
                 msg = '❌活动火爆'
                 power_failure.append(cookie)
+                time.sleep(5)
             else:
                 msg = '❌未知状态'
                 power_failure.append(cookie)
